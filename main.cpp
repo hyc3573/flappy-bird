@@ -35,7 +35,7 @@ public:
     }
 };
 
-vector<IntRect> BackgroundRect::rects = { IntRect(26, 0, 800, 800), IntRect(824, 0, 800, 800), IntRect(26, 829, 800, 800) };
+vector<IntRect> BackgroundRect::rects = { IntRect(26, 0, 800, 800), IntRect(824, 0, 800, 800), IntRect(26, 829, 800, 800), IntRect(824, 829, 800, 800) };
 
 class Bird : public Sprite
 {
@@ -251,13 +251,17 @@ int main()
             if (elem.upper.getGlobalBounds().intersects(bird.getGlobalBounds()) || 
                 elem.lower.getGlobalBounds().intersects(bird.getGlobalBounds()))
             {
-                //reset();
+#ifndef _DEBUG
+                reset();
+#endif
             }
         }
 
         if (bird.getPosition().y > SHEIGHT || bird.getPosition().y < 0)
         {
-            //reset();
+#ifndef _DEBUG
+            reset();
+#endif
         }
 
         window.clear();
