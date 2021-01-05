@@ -17,7 +17,7 @@
 
 #define PUSHF -160
 
-#define PIPEHRANGE 400 
+#define PIPEHRANGE 200
 
 #define PIPEINTERVAL 1000
 
