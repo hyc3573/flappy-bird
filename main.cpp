@@ -17,14 +17,25 @@
 
 #define PUSHF -160
 
-#define PIPEHRANGE 200
+#define PIPEHRANGE 40
 
 #define PIPEINTERVAL 1000
 
-typedef int Square;
-
 using namespace std;
 using namespace sf;
+
+class BackgroundRect
+{
+private:
+    static vector<IntRect> rects;
+public:
+    static IntRect get()
+    {
+        return rects[rand() % rects.size()];
+    }
+};
+
+vector<IntRect> BackgroundRect::rects = { IntRect(26, 0, 800, 800), IntRect(824, 0, 800, 800), IntRect(26, 829, 800, 800) };
 
 class Bird : public Sprite
 {
@@ -93,15 +104,20 @@ private:
     float pipeInterval;
     Texture& texture;
     IntRect rect;
+    BackgroundRect backRect;
+    Texture& backTexture;
 
     float randY()
     {
-        return rand() % PIPEHRANGE + SHEIGHT / 2 - PIPEHRANGE/2;
+        static float last = SHEIGHT/2;
+        last = max(min(last - (rand()%PIPEHRANGE - PIPEHRANGE/2), SHEIGHT - PIPEGAP/2.f), 0.f + PIPEGAP/2);
+        return last;
     }
 
 public:
-    Background(Texture& backTexture, Texture& texture, IntRect backRect, IntRect rect, float speed, float pipeInterval) : background1(Sprite(backTexture, backRect)), 
-        background2(Sprite(backTexture, backRect)), pipeInterval(pipeInterval), texture(texture), rect(rect), speed(speed)
+    Background(Texture& backTexture, Texture& texture, IntRect rect, float speed, float pipeInterval) : backTexture(backTexture),
+        background1(Sprite(backTexture, BackgroundRect::get())), background2(Sprite(backTexture, BackgroundRect::get())), 
+        pipeInterval(pipeInterval), texture(texture), rect(rect), speed(speed)
     {
         background1.setPosition(0, 0);
 
@@ -143,6 +159,7 @@ public:
 
         if (background2.getPosition().x <= 0)
         {
+            background1 = Sprite(texture, BackgroundRect::get());
             background1.setPosition(background2.getPosition().x + SWIDTH, 0);
             swap<Sprite>(background1, background2);
         }
@@ -166,10 +183,13 @@ public:
 
 int main()
 {
+    const IntRect birdRect(0, 0, 25, 25);
+    const IntRect pipeRect(0, 26, 25, 1600);
+
     unsigned int t = GetTickCount64();
     srand(t);
 
-    RenderWindow window(VideoMode(SWIDTH, SHEIGHT), L"크고♂아름다운♂게이ㅁ");
+    RenderWindow window(VideoMode(SWIDTH, SHEIGHT), L"플래피버드");
 
     Event event;
 
@@ -182,8 +202,8 @@ int main()
         cout << "Error!" << endl;
     }
 
-    Bird bird(XMARGIN, SHEIGHT/2, GRAVITY, texture, IntRect(0, 0, 25, 25));
-    Background back(texture, texture, IntRect(26, 0, 800, 800), IntRect(0, 26, 25, 1600), INITSPD, PIPEINTERVAL);
+    Bird bird(XMARGIN, SHEIGHT / 2, GRAVITY, texture, birdRect);
+    Background back(texture, texture, pipeRect, INITSPD, PIPEINTERVAL);
 
     float dt;
 
@@ -191,8 +211,8 @@ int main()
 
     auto reset = [&]()
     {
-        bird = Bird(XMARGIN, SHEIGHT / 2, GRAVITY, texture, IntRect(0, 0, 25, 25));
-        back = Background(texture, texture, IntRect(26, 0, 800, 800), IntRect(0, 26, 25, 1600), INITSPD, PIPEINTERVAL);
+        bird = Bird(XMARGIN, SHEIGHT / 2, GRAVITY, texture, birdRect);
+        back = Background(texture, texture, pipeRect, INITSPD, PIPEINTERVAL);
         back.SetSpeed(INITSPD);
         timer.restart();
     };
@@ -231,13 +251,13 @@ int main()
             if (elem.upper.getGlobalBounds().intersects(bird.getGlobalBounds()) || 
                 elem.lower.getGlobalBounds().intersects(bird.getGlobalBounds()))
             {
-                reset();
+                //reset();
             }
         }
 
         if (bird.getPosition().y > SHEIGHT || bird.getPosition().y < 0)
         {
-            reset();
+            //reset();
         }
 
         window.clear();
